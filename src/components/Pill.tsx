@@ -1,31 +1,33 @@
 import React from 'react';
+// import { MagicMotion } from 'react-magic-motion';
 import { View, Text, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Feather } from '@expo/vector-icons';
 const { width } = Dimensions.get('window');
 
-export default function Pill ({name, frequency, quantity}) {
-
+export default function Pill(props) {
+    const { name, dose, time, option } = props;
     const handleEdit = () => {
         console.log('Editando pastilla');
     };
 
     return (
-        <TouchableOpacity style={styles.pillContainer}>
-            <View style={styles.iconContainer}>
-                <MaterialCommunityIcons name="pill" size={24} color="#0AB8F7"/>
+            <View style={styles.pillContainer}>
+                <View style={styles.iconContainer}>
+                    <MaterialCommunityIcons name="pill" size={24} color="#0AB8F7" />
+                </View>
+                <View style={styles.text}>
+                    <Text>Nombre: {name}</Text>
+                    <Text>Dosis: {dose}</Text>
+                    <Text>Horario: {time}</Text>
+                    <Text>Casilla: {option}</Text>
+                </View>
+                <TouchableOpacity style={styles.editButton} onPress={handleEdit}>
+                    <Feather name="edit" size={24} color="#0AB8F7" />
+                </TouchableOpacity>
             </View>
-            <View style={styles.text}>
-                <Text>Nombre: Paracetamol {name}</Text>
-                <Text>Frecuencia: Cada 8 horas{frequency}</Text>
-                <Text>Cantidad: 1{quantity}</Text>
-            </View>
-            <TouchableOpacity style={styles.editButton}>
-                <Feather name="edit" size={24} color="#0AB8F7" />
-            </TouchableOpacity>
-        </TouchableOpacity>
     );
-};
+}
 
 const styles = StyleSheet.create({
     pillContainer: {
@@ -35,7 +37,7 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         width: width - 60,
         flexDirection: 'row',
-        justifyContent: 'space-between', 
+        justifyContent: 'space-between',
     },
 
     text: {
@@ -51,3 +53,5 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
 });
+
+
