@@ -95,6 +95,7 @@ export default function AddPill() {
                         placeholderTextColor="grey"
                         onChangeText={(text) => setPillDose(text)}
                         value={pillDose}
+                        keyboardType="numeric" // Set keyboardType to "numeric"
                     />
                     <TouchableOpacity style={styles.input} onPress={showTimePicker}>
                         <Text style={{ color: 'gray' }}>{selectedTime ? selectedTime.toLocaleTimeString() : 'Seleccionar horario'}</Text>
@@ -104,7 +105,7 @@ export default function AddPill() {
                         mode="time"
                         onConfirm={handleConfirm}
                         onCancel={hideTimePicker}
-                    />
+                    />  
                     <PickerSelect
                         value={selectedOption}
                         onValueChange={(value) => setSelectedOption(value)}
@@ -117,14 +118,14 @@ export default function AddPill() {
                             { label: 'Casilla 5', value: 'Casilla 5' },
                             { label: 'Casilla 6', value: 'Casilla 6' },
                             { label: 'Casilla 7', value: 'Casilla 7' },
-                            { label: 'Casilla 8', value: 'Casilla 8' },
-                            { label: 'Casilla 9', value: 'Casilla 9' }
+                            { label: 'Casilla 8', value: 'Casilla 8' }
                         ]}
                         style={{
                             inputIOS: styles.dropdown,
                             inputAndroid: styles.dropdown,
-                            placeholder: { color: 'gray' }
+                            placeholder: { color: 'gray' },
                         }}
+                        useNativeAndroidPickerStyle={false} // Add this line
                     />
                     <TouchableOpacity
                         style={[styles.addButton, { opacity: isAddingPill ? 0.5 : 1 }]}
@@ -184,10 +185,6 @@ const styles = StyleSheet.create({
         backgroundColor: 'white',
         borderRadius: 10,
         justifyContent: 'center',
-    },
-
-    dropdownText: {
-        color: 'gray',
     },
 
     addButton: {

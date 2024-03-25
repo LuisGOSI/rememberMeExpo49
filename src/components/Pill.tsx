@@ -1,5 +1,5 @@
 import React from 'react';
-// import { MagicMotion } from 'react-magic-motion';
+import { Modal } from 'react-native';
 import { View, Text, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Feather } from '@expo/vector-icons';
@@ -12,6 +12,7 @@ export default function Pill(props) {
     };
 
     return (
+        <View>
             <View style={styles.pillContainer}>
                 <View style={styles.iconContainer}>
                     <MaterialCommunityIcons name="pill" size={24} color="#0AB8F7" />
@@ -26,6 +27,7 @@ export default function Pill(props) {
                     <Feather name="edit" size={24} color="#0AB8F7" />
                 </TouchableOpacity>
             </View>
+        </View>
     );
 }
 

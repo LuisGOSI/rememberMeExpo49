@@ -1,18 +1,18 @@
-import { StatusBar } from 'expo-status-bar';
-import React from 'react';
-import { useState } from 'react';
-import { useFocusEffect } from 'expo-router';
-import { StyleSheet, Text, View, Dimensions, ScrollView, Image, Button } from 'react-native';
-const { width } = Dimensions.get('window');
+import React, { useEffect } from 'react';
 import TopStroke from '../../components/TopStroke';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Pill from '../../components/Pill';
+import * as Font from 'expo-font';
+import { StatusBar } from 'expo-status-bar';
+import { useState } from 'react';
+import { useFocusEffect } from 'expo-router';
+import { StyleSheet, Text, View, Dimensions, ScrollView, Image, Button, Alert } from 'react-native';
 import { Modal, TouchableOpacity, TouchableWithoutFeedback } from 'react-native';
 
-
-
+const { width } = Dimensions.get('window');
 
 export default function Home() {
+    const [fontLoaded, setFontLoaded] = useState(false);
     const [pillList, setPillList] = useState([]);
     const [selectedPill, setSelectedPill] = useState(null);
 
@@ -43,10 +43,48 @@ export default function Home() {
         setSelectedPill(pill);
     };
 
+    const handleDeletePill = async (pill) => {
+        try {
+            const confirmDelete = await new Promise((resolve) => {
+                Alert.alert(
+                    'Confirmar eliminación',
+                    '¿Estás seguro de que deseas eliminar esta pastilla?',
+                    [
+                        { text: 'Cancelar', onPress: () => resolve(false) },
+                        { text: 'Eliminar', onPress: () => resolve(true) },
+                    ]
+                );
+            });
+            if (confirmDelete) {
+                await AsyncStorage.setItem('pillList', JSON.stringify(pillList.filter((item) => item !== selectedPill)));
+                console.log('La pastilla ha sido eliminada');
+                setSelectedPill(null);
+                fetchPills();
+            } else {
+                console.log('Eliminación cancelada');
+            }
+        } catch (error) {
+            console.error('Error eliminando la pastilla:', error);
+        }
+    }
+
 
     const handleCloseModal = () => {
         setSelectedPill(null);
     };
+
+    useEffect(() => {
+        const loadFont = async () => {
+            await Font.loadAsync({
+                'Lemonada': require('../../../assets/fonts/Lemonada-Regular.ttf'),
+            });
+            setFontLoaded(true);
+        }
+        loadFont();
+        if (!fontLoaded) {
+            return; 
+        }
+    }, []);
 
 
     useFocusEffect(
@@ -71,14 +109,14 @@ export default function Home() {
                     <ScrollView style={styles.pillsContainer}>
                         {pillList.map((item, index) => (
                             <TouchableOpacity key={index} onPress={() => handlePillPress(item)}>
-                                <Pill key={index} name={item.name} dose={item.dose} time={item.time} option={item.option}/>
+                                <Pill key={index} name={item.name} dose={item.dose} time={item.time} option={item.option} />
                             </TouchableOpacity>
                         ))}
                     </ScrollView>
                 )}
                 <StatusBar style="inverted" />
                 <View style={styles.button}>
-                    <Button title="Eliminar todas las pastillas" onPress={handleDeleteAllPills} color={"#ffffff"} />
+                    <Button title="Eliminar todas las pastillas" onPress={handleDeleteAllPills} color={"#C4CBD4"} />
                 </View>
             </View>
 
@@ -87,6 +125,9 @@ export default function Home() {
                     <View style={styles.modalContainer}>
                         {selectedPill && (
                             <View>
+                                <View style={styles.buttonModal}>
+                                    <Button title="X" onPress={handleCloseModal} color={"#000000"} />
+                                </View>
                                 <View style={styles.infoTitleModal}>
                                     <Text style={styles.titleModal}>Información de la pastilla</Text>
                                     <Image source={require('../../../assets/pill.png')} style={styles.imageModal} />
@@ -95,9 +136,10 @@ export default function Home() {
                                     <Text >Nombre: {selectedPill.name}</Text>
                                     <Text >Dosis: {selectedPill.dose}</Text>
                                     <Text >Hora : {selectedPill.time}</Text>
+                                    <Text >Opción: {selectedPill.option}</Text>
                                 </View>
-                                <View style={styles.buttonModal}>
-                                    <Button title="Cerrar" onPress={handleCloseModal} color={"#000000"} />
+                                <View style={styles.buttonDeleteModal}>
+                                    <Button title="Eliminar pastilla" onPress={handleDeletePill} color={"#000000"} />
                                 </View>
                             </View>
                         )}
@@ -132,6 +174,7 @@ const styles = StyleSheet.create({
         fontSize: 30,
         fontWeight: 'bold',
         bottom: 30,
+        fontFamily: 'Arial',
     },
 
     messageContainer: {
@@ -176,7 +219,7 @@ const styles = StyleSheet.create({
 
     infoTitleModal: {
         alignItems: 'center',
-        
+
     },
 
     titleModal: {
@@ -195,10 +238,15 @@ const styles = StyleSheet.create({
     },
 
     buttonModal: {
-        marginTop: 20,
         backgroundColor: '#3099F0',
         borderRadius: 10,
+        width: 50,
 
+    },
+
+    buttonDeleteModal: {
+        backgroundColor: '#Ff0000',
+        borderRadius: 10,
     },
 
     button: {
