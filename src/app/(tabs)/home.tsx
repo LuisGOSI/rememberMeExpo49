@@ -2,19 +2,29 @@ import React, { useEffect } from 'react';
 import TopStroke from '../../components/TopStroke';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Pill from '../../components/Pill';
+import * as Notifications from 'expo-notifications';
 import * as Font from 'expo-font';
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
 import { useFocusEffect } from 'expo-router';
-import { StyleSheet, Text, View, Dimensions, ScrollView, Image, Button, Alert } from 'react-native';
+import { StyleSheet, Text, View, Dimensions, ScrollView, Image, Button, Alert, Platform } from 'react-native';
 import { Modal, TouchableOpacity, TouchableWithoutFeedback } from 'react-native';
 
 const { width } = Dimensions.get('window');
+
+Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+        shouldShowAlert: true,
+        shouldPlaySound: true,
+        shouldSetBadge: false,
+    })
+});
 
 export default function Home() {
     const [fontLoaded, setFontLoaded] = useState(false);
     const [pillList, setPillList] = useState([]);
     const [selectedPill, setSelectedPill] = useState(null);
+    const [expoPushToken, setExpoPushToken] = useState('');
 
     const fetchPills = async () => {
         try {
@@ -74,6 +84,7 @@ export default function Home() {
     };
 
     useEffect(() => {
+        registerForPushNotificationsAsync().then(token => setExpoPushToken(token));
         const loadFont = async () => {
             await Font.loadAsync({
                 'Lemonada': require('../../../assets/fonts/Lemonada-Regular.ttf'),
@@ -82,7 +93,7 @@ export default function Home() {
         }
         loadFont();
         if (!fontLoaded) {
-            return; 
+            return;
         }
     }, []);
 
@@ -92,6 +103,31 @@ export default function Home() {
             fetchPills();
         }, [])
     );
+
+    const registerForPushNotificationsAsync = async () => {
+        let token;
+        const { status: existingStatus } = await Notifications.getPermissionsAsync();
+        let finalStatus = existingStatus;
+        if (existingStatus !== 'granted') {
+            const { status } = await Notifications.requestPermissionsAsync();
+            finalStatus = status;
+        }
+        if (finalStatus !== 'granted') {
+            alert('Failed to get push token for push notification!');
+            return;
+        }
+        token = (await Notifications.getExpoPushTokenAsync({ projectId: '3c3d8883-689b-4412-b7f5-2cf38fbfcc46' })).data;
+        console.log(token);
+        if (Platform.OS === 'android') {
+            Notifications.setNotificationChannelAsync('default', {
+                name: 'default',
+                importance: Notifications.AndroidImportance.MAX,
+                vibrationPattern: [0, 250, 250, 250],
+                lightColor: '#FF231F7C',
+            });
+        }
+        return token;
+    }
 
     return (
         <View style={styles.mainContainer}>
@@ -174,7 +210,6 @@ const styles = StyleSheet.create({
         fontSize: 30,
         fontWeight: 'bold',
         bottom: 30,
-        fontFamily: 'Arial',
     },
 
     messageContainer: {

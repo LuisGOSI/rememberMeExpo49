@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "rememberMeExpo49",
-    "slug": "rememberMeExpo49",
+    "slug": "rememberme",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -29,6 +29,15 @@
     },
     "plugins": [
       "expo-router"
-    ]
+    ],
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "3c3d8883-689b-4412-b7f5-2cf38fbfcc46"
+      }
+    },
+    "owner": "luisgosi"
   }
 }
