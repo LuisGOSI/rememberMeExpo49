@@ -25,6 +25,7 @@ export default function Home() {
     const [pillList, setPillList] = useState([]);
     const [selectedPill, setSelectedPill] = useState(null);
     const [expoPushToken, setExpoPushToken] = useState('');
+    const [translatedFrequency, setTranslatedFrequency] = useState('');
 
     const fetchPills = async () => {
         try {
@@ -37,6 +38,17 @@ export default function Home() {
             console.error('Error fetching pills:', error);
         }
     };
+
+
+    const translateFrequency = async (pill) => {
+        if (pill.frequency === 'daily') {
+            setTranslatedFrequency("Diaria");
+        } else if (pill.frequency === 'weekly') {
+            setTranslatedFrequency("Semanal");
+        } else if (pill.frequency === 'monthly') {
+            setTranslatedFrequency("Mensual");
+        }
+    }
 
     const handleDeleteAllPills = async () => {
         try {
@@ -51,6 +63,7 @@ export default function Home() {
 
     const handlePillPress = (pill) => {
         setSelectedPill(pill);
+        translateFrequency(pill);
     };
 
     const handleDeletePill = async (pill) => {
@@ -78,13 +91,11 @@ export default function Home() {
         }
     }
 
-
     const handleCloseModal = () => {
         setSelectedPill(null);
     };
 
     useEffect(() => {
-        registerForPushNotificationsAsync().then(token => setExpoPushToken(token));
         const loadFont = async () => {
             await Font.loadAsync({
                 'Lemonada': require('../../../assets/fonts/Lemonada-Regular.ttf'),
@@ -92,9 +103,8 @@ export default function Home() {
             setFontLoaded(true);
         }
         loadFont();
-        if (!fontLoaded) {
-            return;
-        }
+    
+        registerForPushNotificationsAsync().then(token => setExpoPushToken(token));
     }, []);
 
 
@@ -132,6 +142,7 @@ export default function Home() {
     return (
         <View style={styles.mainContainer}>
             <TopStroke />
+            
             <View style={styles.container}>
                 <Text style={styles.text}>Mis pastillas</Text>
                 {pillList.length === 0 ? (
@@ -156,8 +167,7 @@ export default function Home() {
                 </View>
             </View>
 
-            <Modal visible={selectedPill !== null} animationType="slide">
-                <TouchableWithoutFeedback onPress={handleCloseModal}>
+            <Modal visible={selectedPill != null} animationType="slide" transparent>
                     <View style={styles.modalContainer}>
                         {selectedPill && (
                             <View>
@@ -173,6 +183,8 @@ export default function Home() {
                                     <Text >Dosis: {selectedPill.dose}</Text>
                                     <Text >Hora : {selectedPill.time}</Text>
                                     <Text >Opción: {selectedPill.option}</Text>
+                                    <Text >Frecuencia: {translatedFrequency}</Text>
+                                    <Text >Intervalo de repetición: {selectedPill.repeatInterval}</Text>
                                 </View>
                                 <View style={styles.buttonDeleteModal}>
                                     <Button title="Eliminar pastilla" onPress={handleDeletePill} color={"#000000"} />
@@ -180,7 +192,6 @@ export default function Home() {
                             </View>
                         )}
                     </View>
-                </TouchableWithoutFeedback>
             </Modal>
         </View>
     );
@@ -241,7 +252,7 @@ const styles = StyleSheet.create({
 
     modalContainer: {
         flex: 1,
-        backgroundColor: '#B1D4FE',
+        backgroundColor: 'rgba(0, 0, 0, 0.7)',
         alignItems: 'center',
         justifyContent: 'center',
     },
@@ -276,10 +287,12 @@ const styles = StyleSheet.create({
         backgroundColor: '#3099F0',
         borderRadius: 10,
         width: 50,
+        marginBottom: 100,
 
     },
 
     buttonDeleteModal: {
+        marginTop: 20,
         backgroundColor: '#Ff0000',
         borderRadius: 10,
     },

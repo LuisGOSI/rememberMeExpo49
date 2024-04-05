@@ -18,11 +18,9 @@ export default function AddPill() {
     const [pillList, setPillList] = useState([]);
     const [selectedOption, setSelectedOption] = useState(null);
     const [selectedFrequency, setSelectedFrequency] = useState(null);
-    const [repeatInterval, setRepeatInterval] = useState(null);
-    const [endDate, setEndDate] = useState(null);
+    const [repeatInterval, setRepeatInterval] = useState('');
     const [isAddingPill, setIsAddingPill] = useState(false);
     const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
-    const [isEndDatePickerVisible, setEndDatePickerVisibility] = useState(false);
 
     useEffect(() => {
         const loadPillList = async () => {
@@ -38,31 +36,12 @@ export default function AddPill() {
         loadPillList();
     }, []);
 
-    const showEndDatePicker = () => {
-        setEndDatePickerVisibility(true);
-    };
-
-    const hideEndDatePicker = () => {
-        setEndDatePickerVisibility(false);
-    };
-
     const showDatePicker = () => {
         setDatePickerVisibility(true);
     };
 
     const hideDatePicker = () => {
         setDatePickerVisibility(false);
-    };
-
-    const handleEndDateConfirm = (date) => {
-        try {
-            setEndDate(date);
-        }
-        catch (error) {
-            console.error('Error seleccionando la fecha límite:', error);
-            Alert.alert('Error', 'Se produjo un error al seleccionar la fecha límite. Por favor, inténtalo de nuevo.');
-        }
-        hideEndDatePicker();
     };
 
     const handleConfirm = (date) => {
@@ -86,6 +65,10 @@ export default function AddPill() {
         }
     }
 
+    function uniqueId(): string {
+        return Math.random().toString(36).substr(2, 9);
+    }
+
     const handleNotification = async (time, space) => {
         const trigger = { hour: time.getHours(), minute: time.getMinutes(), repeats: true };
         try {
@@ -104,7 +87,7 @@ export default function AddPill() {
 
     const handleAddPill = async () => {
         try {
-            if (!pillName || !pillDose || !selectedTime || !selectedOption || !selectedFrequency || !repeatInterval || !endDate) {
+            if (!pillName || !pillDose || !selectedTime || !selectedOption || !selectedFrequency || !repeatInterval ) {
                 Alert.alert('Campos incompletos', 'Por favor complete todos los campos.');
                 return;
             }
@@ -112,13 +95,13 @@ export default function AddPill() {
             setIsAddingPill(true);
 
             const newPill = {
+                id: uniqueId(),
                 name: pillName,
                 dose: pillDose,
                 time: selectedTime.toString(),
                 option: selectedOption,
                 frequency: selectedFrequency,
                 repeatInterval: repeatInterval,
-                endDate: endDate.toString(),
             };
 
             const updatedPillList = [...pillList, newPill];
@@ -132,8 +115,7 @@ export default function AddPill() {
             setSelectedTime(null);
             setSelectedOption(null);
             setSelectedFrequency(null);
-            setRepeatInterval(null);
-            setEndDate(null);
+            setRepeatInterval('');
             console.log('Pastilla guardada:', newPill);
 
         } catch (error) {
@@ -216,18 +198,9 @@ export default function AddPill() {
                         style={styles.input}
                         placeholder="Intervalo de repetición (días)"
                         placeholderTextColor="grey"
-                        onChangeText={(text) => setRepeatInterval(parseInt(text))}
+                        onChangeText={(text) => setRepeatInterval((text))}
                         value={repeatInterval}
                         keyboardType="numeric"
-                    />
-                    <TouchableOpacity style={styles.input} onPress={showEndDatePicker}>
-                        <Text style={{ color: 'gray' }}>{endDate ? endDate.toLocaleDateString() : 'Seleccionar fecha límite'}</Text>
-                    </TouchableOpacity>
-                    <DateTimePicker
-                        mode="date"
-                        isVisible={isEndDatePickerVisible}
-                        onConfirm={handleEndDateConfirm}
-                        onCancel={hideEndDatePicker}
                     />
                     <TouchableOpacity
                         style={[styles.addButton, { opacity: isAddingPill ? 0.5 : 1 }]}
@@ -253,7 +226,6 @@ export default function AddPill() {
 
         container: {
             flex: 1,
-            backgroundColor: '#B1D4FE',
             alignItems: 'center',
             justifyContent: 'center',
         },
@@ -304,3 +276,5 @@ export default function AddPill() {
             color: 'white',
         },
     });
+
+

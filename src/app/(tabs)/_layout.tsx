@@ -9,7 +9,7 @@ function HomeIcon(props) {
 }
 
 function ContactIcon(props) {
-    return <AntDesign name="customerservice" size={50} style={{ marginBottom: -3 }} {...props} />;
+    return <AntDesign name="user" size={50} style={{ marginBottom: -3 }} {...props} />;
 }
 
 function addIcon(props) {
@@ -27,7 +27,7 @@ export default () => {
             <Tabs.Screen name="home" options={{ title: "Inicio", tabBarIcon: HomeIcon }} />
             <Tabs.Screen name="addPill" options={{ title: "Nueva pastilla", tabBarIcon: addIcon }} />
             <Tabs.Screen name="bluetooth" options={{ title: "Bluetooth", tabBarIcon:BluetoothIcon }} />
-            <Tabs.Screen name="contact" options={{ title: "Contacto", tabBarIcon: ContactIcon }} />
+            <Tabs.Screen name="contact" options={{ title: "Sesion", tabBarIcon: ContactIcon }} />
         </Tabs>
     )
 }
