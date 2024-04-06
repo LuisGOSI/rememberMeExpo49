@@ -8,7 +8,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
 import { useFocusEffect } from 'expo-router';
 import { StyleSheet, Text, View, Dimensions, ScrollView, Image, Button, Alert, Platform } from 'react-native';
-import { Modal, TouchableOpacity, TouchableWithoutFeedback } from 'react-native';
+import { Modal, TouchableOpacity } from 'react-native';
 
 const { width } = Dimensions.get('window');
 
@@ -80,6 +80,7 @@ export default function Home() {
             });
             if (confirmDelete) {
                 await AsyncStorage.setItem('pillList', JSON.stringify(pillList.filter((item) => item !== selectedPill)));
+                Notifications.cancelScheduledNotificationAsync(selectedPill.id);
                 console.log('La pastilla ha sido eliminada');
                 setSelectedPill(null);
                 fetchPills();
@@ -142,7 +143,6 @@ export default function Home() {
     return (
         <View style={styles.mainContainer}>
             <TopStroke />
-            
             <View style={styles.container}>
                 <Text style={styles.text}>Mis pastillas</Text>
                 {pillList.length === 0 ? (
@@ -179,15 +179,15 @@ export default function Home() {
                                     <Image source={require('../../../assets/pill.png')} style={styles.imageModal} />
                                 </View >
                                 <View style={styles.modalInfoContainer}>
-                                    <Text >Nombre: {selectedPill.name}</Text>
-                                    <Text >Dosis: {selectedPill.dose}</Text>
-                                    <Text >Hora : {selectedPill.time}</Text>
-                                    <Text >Opción: {selectedPill.option}</Text>
-                                    <Text >Frecuencia: {translatedFrequency}</Text>
-                                    <Text >Intervalo de repetición: {selectedPill.repeatInterval}</Text>
+                                    <Text style={styles.modalTextPill}>Nombre: {selectedPill.name}</Text>
+                                    <Text style={styles.modalTextPill}>Dosis: {selectedPill.dose}</Text>
+                                    <Text style={styles.modalTextPill}>Hora : {selectedPill.time}</Text>
+                                    <Text style={styles.modalTextPill}>Opción: {selectedPill.option}</Text>
+                                    <Text style={styles.modalTextPill}>Frecuencia: {translatedFrequency}</Text>
+                                    <Text style={styles.modalTextPill}>Intervalo de repetición: {selectedPill.repeatInterval} veces</Text>
                                 </View>
                                 <View style={styles.buttonDeleteModal}>
-                                    <Button title="Eliminar pastilla" onPress={handleDeletePill} color={"#000000"} />
+                                    <Button title="Eliminar pastilla" onPress={handleDeletePill} color={"#ffff"} />
                                 </View>
                             </View>
                         )}
@@ -281,6 +281,11 @@ const styles = StyleSheet.create({
         height: 100,
         alignItems: 'center',
         justifyContent: 'center',
+    },
+
+    modalTextPill: {
+        fontSize: 16,
+        marginBottom: 10,
     },
 
     buttonModal: {

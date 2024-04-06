@@ -58,6 +58,7 @@ export default function AddPill() {
     const handleDeleteAllPills = async () => {
         try {
             await AsyncStorage.clear();
+            await Notifications.cancelAllScheduledNotificationsAsync();
             setPillList([]);
             console.log('Todas las pastillas han sido eliminadas');
         } catch (error) {
@@ -69,25 +70,41 @@ export default function AddPill() {
         return Math.random().toString(36).substr(2, 9);
     }
 
-    const handleNotification = async (time, space) => {
-        const trigger = { hour: time.getHours(), minute: time.getMinutes(), repeats: true };
+    const handleNotification = async (time, space, frequency, repeatTimes, id) => {
+        const identifier = id;
+        let trigger;
+        switch (frequency) {
+            case 'daily':
+                trigger = { hour: time.getHours(), minute: time.getMinutes(), repeats: true, intervalMs: repeatTimes };
+                break;
+            case 'weekly':
+                trigger = { hour: time.getHours(), minute: time.getMinutes(), repeats: true, weekday: 1, intervalMs: repeatTimes };
+                break;
+            case 'monthly':
+                trigger = { hour: time.getHours(), minute: time.getMinutes(), repeats: true, day: time.getDate(), intervalMs: repeatTimes };
+                break;
+            default:
+                throw new Error('Frecuencia de notificación no válida');
+        }
         try {
             await Notifications.scheduleNotificationAsync({
                 content: {
-                    title: 'Hora de tomar tu pastilla!',
-                    body: `Es hora de tomar la pastilla en la casilla ${space}.`,
+                    title: 'Hora de tomar la pastilla',
+                    body: `No olvides tomar tu pastilla de la casilla ${space}`,
+                    sound: true,
                 },
                 trigger,
+                identifier,
             });
         } catch (error) {
             console.error('Error programando la notificación:', error);
             Alert.alert('Error', 'Se produjo un error al programar la notificación. Por favor, inténtalo de nuevo.');
         }
     };
-
+    
     const handleAddPill = async () => {
         try {
-            if (!pillName || !pillDose || !selectedTime || !selectedOption || !selectedFrequency || !repeatInterval ) {
+            if (!pillName || !pillDose || !selectedTime || !selectedOption || !selectedFrequency || !repeatInterval) {
                 Alert.alert('Campos incompletos', 'Por favor complete todos los campos.');
                 return;
             }
@@ -107,7 +124,7 @@ export default function AddPill() {
             const updatedPillList = [...pillList, newPill];
             setPillList(updatedPillList);
             await AsyncStorage.setItem('pillList', JSON.stringify(updatedPillList));
-            await handleNotification(selectedTime, selectedOption);
+            await handleNotification(selectedTime, selectedOption, selectedFrequency, repeatInterval, newPill.id, );
 
             Alert.alert('Pastilla agregada', 'La pastilla ha sido agregada correctamente.');
             setPillName('');
@@ -162,14 +179,14 @@ export default function AddPill() {
                         onValueChange={(value) => setSelectedOption(value)}
                         placeholder={{ label: 'Seleccionar casilla', value: null }}
                         items={[
-                            { label: 'Casilla 1', value: '1' },
-                            { label: 'Casilla 2', value: '2' },
-                            { label: 'Casilla 3', value: '3' },
-                            { label: 'Casilla 4', value: '4' },
-                            { label: 'Casilla 5', value: '5' },
-                            { label: 'Casilla 6', value: '6' },
-                            { label: 'Casilla 7', value: '7' },
-                            { label: 'Casilla 8', value: '8' }
+                            { label: 'Roja', value: 'Roja' },
+                            { label: 'Verde', value: 'Verde' },
+                            { label: 'Azul', value: 'Azul' },
+                            { label: 'Naranja', value: 'Naranja' },
+                            { label: 'Blanca', value: 'Blanca' },
+                            { label: 'Rosa', value: 'Rosa' },
+                            { label: 'Amarilla', value: 'Amarilla' },
+                            { label: 'Morada', value: 'Morada' }
                         ]}
                         style={{
                             inputIOS: styles.dropdown,
@@ -218,63 +235,63 @@ export default function AddPill() {
 }
 
 
-    const styles = StyleSheet.create({
-        mainContainer: {
-            flex: 1,
-            backgroundColor: '#B1D4FE',
-        },
+const styles = StyleSheet.create({
+    mainContainer: {
+        flex: 1,
+        backgroundColor: '#B1D4FE',
+    },
 
-        container: {
-            flex: 1,
-            alignItems: 'center',
-            justifyContent: 'center',
-        },
+    container: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
 
-        strokeContainer: {
-            width: width,
-        },
+    strokeContainer: {
+        width: width,
+    },
 
-        text: {
-            fontSize: 30,
-            fontWeight: 'bold',
-            marginBottom: 20,
-        },
+    text: {
+        fontSize: 30,
+        fontWeight: 'bold',
+        marginBottom: 20,
+    },
 
-        formContainer: {
-            width: '80%',
-        },
+    formContainer: {
+        width: '80%',
+    },
 
-        input: {
-            height: 40,
-            marginBottom: 10,
-            paddingHorizontal: 10,
-            backgroundColor: 'white',
-            borderRadius: 10,
-            justifyContent: 'center',
-        },
+    input: {
+        height: 40,
+        marginBottom: 10,
+        paddingHorizontal: 10,
+        backgroundColor: 'white',
+        borderRadius: 10,
+        justifyContent: 'center',
+    },
 
-        dropdown: {
-            height: 40,
-            marginBottom: 10,
-            paddingHorizontal: 10,
-            backgroundColor: 'white',
-            borderRadius: 10,
-            justifyContent: 'center',
-        },
+    dropdown: {
+        height: 40,
+        marginBottom: 10,
+        paddingHorizontal: 10,
+        backgroundColor: 'white',
+        borderRadius: 10,
+        justifyContent: 'center',
+    },
 
-        addButton: {
-            backgroundColor: '#3099F0',
-            paddingVertical: 10,
-            alignItems: 'center',
-            borderRadius: 10,
-            marginTop: 20,
-        },
+    addButton: {
+        backgroundColor: '#3099F0',
+        paddingVertical: 10,
+        alignItems: 'center',
+        borderRadius: 10,
+        marginTop: 20,
+    },
 
-        buttonText: {
-            fontSize: 16,
-            fontWeight: 'bold',
-            color: 'white',
-        },
-    });
+    buttonText: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: 'white',
+    },
+});
 
 
