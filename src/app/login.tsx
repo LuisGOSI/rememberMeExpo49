@@ -1,21 +1,20 @@
 import React, { useState } from 'react';
 import { useRouter } from "expo-router";
 import { View, TextInput, StyleSheet, Text, ScrollView, TouchableOpacity, Alert, StatusBar } from 'react-native';
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, initializeAuth } from 'firebase/auth';
 import { initializeApp } from 'firebase/app';
-import { firebaseConfig } from '../../firebase';
+import { firebaseConfig, persistence } from '../../firebase';
 import TopStroke from '../components/TopStroke';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const LoginScreen = () => {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+const LoginScreen: React.FC = () => {
+    const [email, setEmail] = useState<string>('');
+    const [password, setPassword] = useState<string>('');
     const router = useRouter(); 
 
     const handleSignUp = () => {
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
-
         createUserWithEmailAndPassword(auth, email, password)
             .then((userCredential) => {
                 const user = userCredential.user;
@@ -28,23 +27,26 @@ const LoginScreen = () => {
             });
     }
 
-    const handleLogin = () => {
+    const handleLogin = async () => {
         const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-
-        signInWithEmailAndPassword(auth, email, password)
-            .then((userCredential) => {
-                const user = userCredential.user;
-                AsyncStorage.setItem('userToken', user.uid);
-                Alert.alert('Usuario logueado', 'El usuario ha sido logueado exitosamente');
-                router.push('/(tabs)/home'); // Redirigir al usuario a la página de inicio
-            })
-            .catch((error) => {
-                const errorCode = error.code;
-                const errorMessage = error.message;
-                Alert.alert('Error', errorMessage);
-            });
+        const auth = initializeAuth(app,{
+            persistence: persistence
+        });
+        try {
+            // Configurar la persistencia antes de iniciar sesión            
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+            await AsyncStorage.setItem('userEmail', email);
+            await AsyncStorage.setItem('userToken', user.uid);
+            Alert.alert('Usuario logueado', 'El usuario ha sido logueado exitosamente');
+            router.push('/(tabs)/home'); // Redirigir al usuario a la página de inicio
+        } catch (error) {
+            const errorCode = error.code;
+            const errorMessage = error.message;
+            Alert.alert('Error', errorMessage);
+        }
     }
+
 
     return (
         <View style={styles.mainContainer}>

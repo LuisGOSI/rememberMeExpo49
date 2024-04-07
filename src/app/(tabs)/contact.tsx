@@ -5,36 +5,40 @@ import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, Dimensions, TouchableOpacity } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { Entypo } from '@expo/vector-icons';
-import { getAuth } from 'firebase/auth';
-import { useRouter } from "expo-router";
+import { initializeAuth } from 'firebase/auth';
 import { initializeApp } from 'firebase/app';
-import { firebaseConfig } from '../../../firebase';
+import { firebaseConfig, persistence } from '../../../firebase';
+import { useRouter } from "expo-router";
 
 const { width } = Dimensions.get('window');
 
 const Contact = () => {
-    const [email, setEmail] = useState(null);
+    const [userEmail, setUserEmail] = useState('');
     const router = useRouter(); 
 
     useEffect(() => {
         const getEmail = async () => {
             try {
-                const userEmail = await AsyncStorage.getItem('userToken');
-                setEmail(userEmail); // Esto establecerá correctamente el correo electrónico en el estado
+                let email = await AsyncStorage.getItem('userEmail');
+                setUserEmail(email);
             } catch (error) {
                 console.error('Error obteniendo el correo electrónico:', error);
             }
         };
+
         getEmail();
     }, []);
 
     const handleCloseSession = async () => {
         const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-
+        const auth = initializeAuth(app,{
+            persistence: persistence
+        });
+    
         try {
             await auth.signOut();
             await AsyncStorage.removeItem('userToken');
+            await AsyncStorage.removeItem('userEmail');
             console.log('Sesión cerrada');
             router.push('/login');
         } catch (error) {
@@ -67,7 +71,7 @@ const Contact = () => {
                         </View>
                     </View>
                     <View style={styles.sessionContainer}>
-                        <Text style={styles.emailText}>Correo de la sesión iniciada: luis_gosi@outlook.com</Text>
+                        <Text style={styles.emailText}>Correo de la sesión iniciada: {userEmail}</Text>
                         <TouchableOpacity style={styles.logoutButton} onPress={handleCloseSession}>
                             <Text style={styles.logoutButtonText}>Cerrar sesión</Text>
                         </TouchableOpacity>

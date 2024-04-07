@@ -55,6 +55,7 @@ export default function Home() {
             await AsyncStorage.clear();
             setPillList([]);
             fetchPills();
+            Notifications.cancelAllScheduledNotificationsAsync();
             console.log('Todas las pastillas han sido eliminadas');
         } catch (error) {
             console.error('Error eliminando las pastillas:', error);

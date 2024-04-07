@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import storage from '@react-native-firebase/storage';
 // import DateTimePickerModal from "react-native-modal-datetime-picker";
 import TopStroke from '../../components/TopStroke';
 import DateTimePicker from 'react-native-modal-datetime-picker';
