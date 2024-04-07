@@ -105,7 +105,7 @@ export default function Home() {
             setFontLoaded(true);
         }
         loadFont();
-    
+
         registerForPushNotificationsAsync().then(token => setExpoPushToken(token));
     }, []);
 
@@ -115,6 +115,13 @@ export default function Home() {
             fetchPills();
         }, [])
     );
+
+    const hideDeleteAllPillsButton = () => {
+        if (pillList.length === 0) {
+            return true;
+        }
+        return false;
+    }
 
     const registerForPushNotificationsAsync = async () => {
         let token;
@@ -163,36 +170,38 @@ export default function Home() {
                     </ScrollView>
                 )}
                 <StatusBar style="inverted" />
-                <View style={styles.button}>
-                    <Button title="Eliminar todas las pastillas" onPress={handleDeleteAllPills} color={"#C4CBD4"} />
-                </View>
+                {!hideDeleteAllPillsButton() && (
+                    <View style={styles.button}>
+                        <Button title="Eliminar todas las pastillas" onPress={handleDeleteAllPills} color={"#C4CBD4"} />
+                    </View>
+                )}
             </View>
 
             <Modal visible={selectedPill != null} animationType="slide" transparent>
-                    <View style={styles.modalContainer}>
-                        {selectedPill && (
-                            <View>
-                                <View style={styles.buttonModal}>
-                                    <Button title="X" onPress={handleCloseModal} color={"#000000"} />
-                                </View>
-                                <View style={styles.infoTitleModal}>
-                                    <Text style={styles.titleModal}>Información de la pastilla</Text>
-                                    <Image source={require('../../../assets/pill.png')} style={styles.imageModal} />
-                                </View >
-                                <View style={styles.modalInfoContainer}>
-                                    <Text style={styles.modalTextPill}>Nombre: {selectedPill.name}</Text>
-                                    <Text style={styles.modalTextPill}>Dosis: {selectedPill.dose}</Text>
-                                    <Text style={styles.modalTextPill}>Hora : {selectedPill.time}</Text>
-                                    <Text style={styles.modalTextPill}>Opción: {selectedPill.option}</Text>
-                                    <Text style={styles.modalTextPill}>Frecuencia: {translatedFrequency}</Text>
-                                    <Text style={styles.modalTextPill}>Intervalo de repetición: {selectedPill.repeatInterval} veces</Text>
-                                </View>
-                                <View style={styles.buttonDeleteModal}>
-                                    <Button title="Eliminar pastilla" onPress={handleDeletePill} color={"#ffff"} />
-                                </View>
+                <View style={styles.modalContainer}>
+                    {selectedPill && (
+                        <View>
+                            <View style={styles.buttonModal}>
+                                <Button title="X" onPress={handleCloseModal} color={"#000000"} />
                             </View>
-                        )}
-                    </View>
+                            <View style={styles.infoTitleModal}>
+                                <Text style={styles.titleModal}>Información de la pastilla</Text>
+                                <Image source={require('../../../assets/pill.png')} style={styles.imageModal} />
+                            </View >
+                            <View style={styles.modalInfoContainer}>
+                                <Text style={styles.modalTextPill}>Nombre: {selectedPill.name}</Text>
+                                <Text style={styles.modalTextPill}>Dosis: {selectedPill.dose}</Text>
+                                <Text style={styles.modalTextPill}>Hora : {selectedPill.time}</Text>
+                                <Text style={styles.modalTextPill}>Opción: {selectedPill.option}</Text>
+                                <Text style={styles.modalTextPill}>Frecuencia: {translatedFrequency}</Text>
+                                <Text style={styles.modalTextPill}>Intervalo de repetición: {selectedPill.repeatInterval} veces</Text>
+                            </View>
+                            <View style={styles.buttonDeleteModal}>
+                                <Button title="Eliminar pastilla" onPress={handleDeletePill} color={"#ffff"} />
+                            </View>
+                        </View>
+                    )}
+                </View>
             </Modal>
         </View>
     );

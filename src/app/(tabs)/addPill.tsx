@@ -229,7 +229,7 @@ export default function AddPill() {
                     </TouchableOpacity>
                 </ScrollView>
             </View>
-            <Button title="Eliminar todas las pastillas" onPress={handleDeleteAllPills} color={"#ffffff"} />
+            {/* <Button title="Eliminar todas las pastillas" onPress={handleDeleteAllPills} color={"#ffffff"} /> */}
             <StatusBar style="inverted" />
         </View>
     );

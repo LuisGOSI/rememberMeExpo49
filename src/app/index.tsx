@@ -12,22 +12,6 @@ const StartPage = () => {
         const auth = initializeAuth(app, {
             persistence: persistence
         });
-
-        const checkUser = async () => {
-            try {
-                const userToken = await AsyncStorage.getItem('userToken');
-                if (userToken) {
-                    console.log('Usuario logueado');
-                    <Redirect href="/(tabs)/home" />
-                } else {
-                    console.log('Usuario no logueado');
-                }
-            } catch (error) {
-                console.error('Error obteniendo el token:', error);
-            }
-        }
-
-        checkUser();
     }, []);
 
     return (

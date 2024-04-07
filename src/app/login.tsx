@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from "expo-router";
 import { View, TextInput, StyleSheet, Text, ScrollView, TouchableOpacity, Alert, StatusBar } from 'react-native';
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, initializeAuth } from 'firebase/auth';
@@ -33,7 +33,6 @@ const LoginScreen: React.FC = () => {
             persistence: persistence
         });
         try {
-            // Configurar la persistencia antes de iniciar sesión            
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
             await AsyncStorage.setItem('userEmail', email);
@@ -46,6 +45,24 @@ const LoginScreen: React.FC = () => {
             Alert.alert('Error', errorMessage);
         }
     }
+
+    useEffect(() => {
+        const app = initializeApp(firebaseConfig);
+        const auth = initializeAuth(app,{
+            persistence: persistence
+        });
+        const checkUser = async () => {
+            try {
+                const userToken = await AsyncStorage.getItem('userToken');
+                if (userToken) {
+                    router.push('/(tabs)/home');
+                }
+            } catch (error) {
+                console.error('Error obteniendo el token:', error);
+            }
+        }
+        checkUser();
+    }, []);
 
 
     return (
