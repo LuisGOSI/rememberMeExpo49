@@ -26,10 +26,11 @@ export default function Home() {
     const [selectedPill, setSelectedPill] = useState(null);
     const [expoPushToken, setExpoPushToken] = useState('');
     const [translatedFrequency, setTranslatedFrequency] = useState('');
+    const [userEmail, setUserEmail] = useState('');
 
     const fetchPills = async () => {
         try {
-            const storedPillList = await AsyncStorage.getItem('pillList');
+            const storedPillList = await AsyncStorage.getItem('pillList' + userEmail);
             if (storedPillList !== null) {
                 const parsedPillList = JSON.parse(storedPillList);
                 setPillList(parsedPillList);
@@ -80,7 +81,7 @@ export default function Home() {
                 );
             });
             if (confirmDelete) {
-                await AsyncStorage.setItem('pillList', JSON.stringify(pillList.filter((item) => item !== selectedPill)));
+                await AsyncStorage.setItem('pillList' + userEmail, JSON.stringify(pillList.filter((item) => item !== selectedPill)));
                 Notifications.cancelScheduledNotificationAsync(selectedPill.id);
                 console.log('La pastilla ha sido eliminada');
                 setSelectedPill(null);
@@ -90,6 +91,19 @@ export default function Home() {
             }
         } catch (error) {
             console.error('Error eliminando la pastilla:', error);
+        }
+    }
+
+    
+
+    const getEmail = async () => {
+        try {
+            const storedEmail = await AsyncStorage.getItem('userEmail');
+            if (storedEmail !== null) {
+                setUserEmail(storedEmail);
+            }
+        } catch (error) {
+            console.error('Error fetching email:', error);
         }
     }
 
@@ -103,11 +117,29 @@ export default function Home() {
                 'Lemonada': require('../../../assets/fonts/Lemonada-Regular.ttf'),
             });
             setFontLoaded(true);
-        }
-        loadFont();
-
+        };
+    
+        const fetchPillsAndTranslate = async () => {
+            try {
+                const storedPillList = await AsyncStorage.getItem('pillList' + userEmail);
+                if (storedPillList !== null) {
+                    const parsedPillList = JSON.parse(storedPillList);
+                    setPillList(parsedPillList);
+                }
+            } catch (error) {
+                console.error('Error fetching pills:', error);
+            }
+        };
+    
+        getEmail(); // Llama a getEmail aquí para obtener userEmail
+    
         registerForPushNotificationsAsync().then(token => setExpoPushToken(token));
-    }, []);
+    
+        // Llama a fetchPillsAndTranslate cada vez que userEmail cambie
+        if (userEmail) {
+            fetchPillsAndTranslate();
+        }
+    }, [userEmail]);
 
 
     useFocusEffect(

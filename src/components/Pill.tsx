@@ -1,22 +1,10 @@
-import React, { useState } from 'react';
-import { Modal, View, Text, StyleSheet, Dimensions, TouchableOpacity, TextInput, Button } from 'react-native';
+import React from 'react';
+import {View, Text, StyleSheet, Dimensions } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { Feather } from '@expo/vector-icons';
 const { width } = Dimensions.get('window');
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Pill(props) {
-    const { id, name, dose, time, option, frequency, repeatInterval } = props;
-    const [modalVisible, setModalVisible] = useState(false);
-    const [editedName, setEditedName] = useState(name); 
-    const [editedDose, setEditedDose] = useState(dose); 
-    const [editedTime, setEditedTime] = useState(time); 
-    const [editedOption, setEditedOption] = useState(option); 
-    const [editedFrequency, setEditedFrequency] = useState(frequency);
-    const [editedRepeatInterval, setEditedRepeatInterval] = useState(repeatInterval);
-
-
-
+    const { name, dose, time, option } = props;
     return (
         <View>
             <View style={styles.pillContainer}>

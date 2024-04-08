@@ -22,11 +22,13 @@ export default function AddPill() {
     const [repeatInterval, setRepeatInterval] = useState('');
     const [isAddingPill, setIsAddingPill] = useState(false);
     const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
+    const [userEmail, setUserEmail] = useState('');
+
 
     useEffect(() => {
         const loadPillList = async () => {
             try {
-                const storedPillList = await AsyncStorage.getItem('pillList');
+                const storedPillList = await AsyncStorage.getItem('pillList' + userEmail);
                 if (storedPillList) {
                     setPillList(JSON.parse(storedPillList));
                 }
@@ -34,6 +36,17 @@ export default function AddPill() {
                 console.error('Error cargando las pastillas:', error);
             }
         };
+
+        const getEmail = async () => {
+            try {
+                let email = await AsyncStorage.getItem('userEmail');
+                setUserEmail(email);
+            } catch (error) {
+                console.error('Error obteniendo el correo electrónico:', error);
+            }
+        };
+
+        getEmail();
         loadPillList();
     }, []);
 
@@ -124,7 +137,7 @@ export default function AddPill() {
 
             const updatedPillList = [...pillList, newPill];
             setPillList(updatedPillList);
-            await AsyncStorage.setItem('pillList', JSON.stringify(updatedPillList));
+            await AsyncStorage.setItem('pillList' + userEmail, JSON.stringify(updatedPillList));
             await handleNotification(selectedTime, selectedOption, selectedFrequency, repeatInterval, newPill.id, );
 
             Alert.alert('Pastilla agregada', 'La pastilla ha sido agregada correctamente.');
