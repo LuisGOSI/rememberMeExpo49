@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import storage from '@react-native-firebase/storage';
-// import DateTimePickerModal from "react-native-modal-datetime-picker";
 import TopStroke from '../../components/TopStroke';
 import DateTimePicker from 'react-native-modal-datetime-picker';
 import PickerSelect from 'react-native-picker-select';
@@ -9,6 +7,7 @@ import * as Notifications from 'expo-notifications';
 import { Button, ScrollView } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, Dimensions, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { useFocusEffect } from 'expo-router';
 
 const { width } = Dimensions.get('window');
 
@@ -22,33 +21,7 @@ export default function AddPill() {
     const [repeatInterval, setRepeatInterval] = useState('');
     const [isAddingPill, setIsAddingPill] = useState(false);
     const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
-    const [userEmail, setUserEmail] = useState('');
-
-
-    useEffect(() => {
-        const loadPillList = async () => {
-            try {
-                const storedPillList = await AsyncStorage.getItem('pillList' + userEmail);
-                if (storedPillList) {
-                    setPillList(JSON.parse(storedPillList));
-                }
-            } catch (error) {
-                console.error('Error cargando las pastillas:', error);
-            }
-        };
-
-        const getEmail = async () => {
-            try {
-                let email = await AsyncStorage.getItem('userEmail');
-                setUserEmail(email);
-            } catch (error) {
-                console.error('Error obteniendo el correo electrónico:', error);
-            }
-        };
-
-        getEmail();
-        loadPillList();
-    }, []);
+    const [userEmail, setUserEmail] = useState('');;
 
     const showDatePicker = () => {
         setDatePickerVisibility(true);
@@ -115,16 +88,16 @@ export default function AddPill() {
             Alert.alert('Error', 'Se produjo un error al programar la notificación. Por favor, inténtalo de nuevo.');
         }
     };
-    
+
     const handleAddPill = async () => {
         try {
             if (!pillName || !pillDose || !selectedTime || !selectedOption || !selectedFrequency || !repeatInterval) {
                 Alert.alert('Campos incompletos', 'Por favor complete todos los campos.');
                 return;
             }
-
+    
             setIsAddingPill(true);
-
+    
             const newPill = {
                 id: uniqueId(),
                 name: pillName,
@@ -134,12 +107,13 @@ export default function AddPill() {
                 frequency: selectedFrequency,
                 repeatInterval: repeatInterval,
             };
-
-            const updatedPillList = [...pillList, newPill];
+    
+            const updatedPillList = [...pillList, newPill]; // Aquí se cambió la forma de concatenar las listas
             setPillList(updatedPillList);
-            await AsyncStorage.setItem('pillList' + userEmail, JSON.stringify(updatedPillList));
-            await handleNotification(selectedTime, selectedOption, selectedFrequency, repeatInterval, newPill.id, );
-
+            await AsyncStorage.setItem('pillList' + userEmail, JSON.stringify(updatedPillList)); // Se guarda la lista actualizada
+    
+            await handleNotification(selectedTime, selectedOption, selectedFrequency, repeatInterval, newPill.id,);
+    
             Alert.alert('Pastilla agregada', 'La pastilla ha sido agregada correctamente.');
             setPillName('');
             setPillDose('');
@@ -148,14 +122,57 @@ export default function AddPill() {
             setSelectedFrequency(null);
             setRepeatInterval('');
             console.log('Pastilla guardada:', newPill);
-
+    
         } catch (error) {
             console.error('Error guardando la pastilla:', error);
             Alert.alert('Error', 'Se produjo un error al guardar la pastilla. Por favor, inténtalo de nuevo.');
         } finally {
             setIsAddingPill(false);
         }
-    };
+    }
+
+    useEffect(() => {
+        const loadPillList = async () => {
+            try {
+                const storedPillList = await AsyncStorage.getItem('pillList' + userEmail);
+                if (storedPillList) {
+                    setPillList(JSON.parse(storedPillList));
+                }
+            } catch (error) {
+                console.error('Error cargando las pastillas:', error);
+            }
+        };
+
+        const getEmail = async () => {
+            try {
+                let email = await AsyncStorage.getItem('userEmail');
+                setUserEmail(email);
+            } catch (error) {
+                console.error('Error obteniendo el correo electrónico:', error);
+            }
+        };
+
+        getEmail();
+        loadPillList();
+    }, [])
+
+    useFocusEffect(
+        React.useCallback(() => {
+            const loadPillList = async () => {
+                try {
+                    const storedPillList = await AsyncStorage.getItem('pillList' + userEmail);
+                    if (storedPillList) {
+                        setPillList(JSON.parse(storedPillList));
+                    }
+                } catch (error) {
+                    console.error('Error cargando las pastillas:', error);
+                }
+            };
+    
+            loadPillList();
+        }, [userEmail])
+    );
+
 
     return (
         <View style={styles.mainContainer}>

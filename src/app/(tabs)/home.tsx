@@ -34,12 +34,12 @@ export default function Home() {
             if (storedPillList !== null) {
                 const parsedPillList = JSON.parse(storedPillList);
                 setPillList(parsedPillList);
+                console.log('Pastillas cargadas:', parsedPillList);
             }
         } catch (error) {
             console.error('Error fetching pills:', error);
         }
     };
-
 
     const translateFrequency = async (pill) => {
         if (pill.frequency === 'daily') {
@@ -53,27 +53,10 @@ export default function Home() {
 
     const handleDeleteAllPills = async () => {
         try {
-            await AsyncStorage.clear();
-            setPillList([]);
-            fetchPills();
-            Notifications.cancelAllScheduledNotificationsAsync();
-            console.log('Todas las pastillas han sido eliminadas');
-        } catch (error) {
-            console.error('Error eliminando las pastillas:', error);
-        }
-    }
-
-    const handlePillPress = (pill) => {
-        setSelectedPill(pill);
-        translateFrequency(pill);
-    };
-
-    const handleDeletePill = async (pill) => {
-        try {
             const confirmDelete = await new Promise((resolve) => {
                 Alert.alert(
                     'Confirmar eliminación',
-                    '¿Estás seguro de que deseas eliminar esta pastilla?',
+                    '¿Estás seguro de que deseas eliminar todas las pastillas?',
                     [
                         { text: 'Cancelar', onPress: () => resolve(false) },
                         { text: 'Eliminar', onPress: () => resolve(true) },
@@ -81,72 +64,36 @@ export default function Home() {
                 );
             });
             if (confirmDelete) {
-                await AsyncStorage.setItem('pillList' + userEmail, JSON.stringify(pillList.filter((item) => item !== selectedPill)));
-                Notifications.cancelScheduledNotificationAsync(selectedPill.id);
-                console.log('La pastilla ha sido eliminada');
-                setSelectedPill(null);
-                fetchPills();
+                // Obtener todas las claves almacenadas en AsyncStorage
+                const allKeys = await AsyncStorage.getAllKeys();
+
+                // Filtrar solo las claves relacionadas con las pastillas
+                const pillKeys = allKeys.filter(key => key.startsWith('pillList' + userEmail));
+
+                // Eliminar las pastillas una por una
+                for (const key of pillKeys) {
+                    await AsyncStorage.removeItem(key);
+                }
+
+                // Cancelar todas las notificaciones programadas
+                await Notifications.cancelAllScheduledNotificationsAsync();
+
+                console.log('Todas las pastillas han sido eliminadas');
+                setPillList([]); // Vaciar la lista localmente
+                fetchPills(); // Llamar a fetchPills para cargar la nueva lista vacía
             } else {
                 console.log('Eliminación cancelada');
             }
         } catch (error) {
-            console.error('Error eliminando la pastilla:', error);
+            console.error('Error eliminando las pastillas:', error);
         }
-    }
-
-    
-
-    const getEmail = async () => {
-        try {
-            const storedEmail = await AsyncStorage.getItem('userEmail');
-            if (storedEmail !== null) {
-                setUserEmail(storedEmail);
-            }
-        } catch (error) {
-            console.error('Error fetching email:', error);
-        }
-    }
-
-    const handleCloseModal = () => {
-        setSelectedPill(null);
     };
 
-    useEffect(() => {
-        const loadFont = async () => {
-            await Font.loadAsync({
-                'Lemonada': require('../../../assets/fonts/Lemonada-Regular.ttf'),
-            });
-            setFontLoaded(true);
-        };
-    
-        const fetchPillsAndTranslate = async () => {
-            try {
-                const storedPillList = await AsyncStorage.getItem('pillList' + userEmail);
-                if (storedPillList !== null) {
-                    const parsedPillList = JSON.parse(storedPillList);
-                    setPillList(parsedPillList);
-                }
-            } catch (error) {
-                console.error('Error fetching pills:', error);
-            }
-        };
-    
-        getEmail(); // Llama a getEmail aquí para obtener userEmail
-    
-        registerForPushNotificationsAsync().then(token => setExpoPushToken(token));
-    
-        // Llama a fetchPillsAndTranslate cada vez que userEmail cambie
-        if (userEmail) {
-            fetchPillsAndTranslate();
-        }
-    }, [userEmail]);
+    const handlePillPress = (pill) => {
+        setSelectedPill(pill);
+        translateFrequency(pill);
+    };
 
-
-    useFocusEffect(
-        React.useCallback(() => {
-            fetchPills();
-        }, [])
-    );
 
     const hideDeleteAllPillsButton = () => {
         if (pillList.length === 0) {
@@ -180,6 +127,82 @@ export default function Home() {
         return token;
     }
 
+    const handleDeletePill = async (pill) => {
+        try {
+            const confirmDelete = await new Promise((resolve) => {
+                Alert.alert(
+                    'Confirmar eliminación',
+                    '¿Estás seguro de que deseas eliminar esta pastilla?',
+                    [
+                        { text: 'Cancelar', onPress: () => resolve(false) },
+                        { text: 'Eliminar', onPress: () => resolve(true) },
+                    ]
+                );
+            });
+            if (confirmDelete) {
+                const newPillList = pillList.filter((item) => item.id !== selectedPill.id);
+                await AsyncStorage.setItem('pillList' + userEmail, JSON.stringify(newPillList));
+                Notifications.cancelScheduledNotificationAsync(selectedPill.id);
+                console.log('La pastilla ha sido eliminada');
+                setSelectedPill(null);
+                fetchPills();
+            } else {
+                console.log('Eliminación cancelada');
+            }
+        } catch (error) {
+            console.error('Error eliminando la pastilla:', error);
+        }
+    }
+
+    const getEmail = async () => {
+        try {
+            const storedEmail = await AsyncStorage.getItem('userEmail');
+            if (storedEmail !== null) {
+                setUserEmail(storedEmail);
+            }
+        } catch (error) {
+            console.error('Error fetching email:', error);
+        }
+    }
+
+    const handleCloseModal = () => {
+        setSelectedPill(null);
+    };
+
+    useEffect(() => {
+        const loadFont = async () => {
+            await Font.loadAsync({
+                'Lemonada': require('../../../assets/fonts/Lemonada-Regular.ttf'),
+            });
+            setFontLoaded(true);
+        };
+
+        const fetchPillsAndTranslate = async () => {
+            try {
+                const storedPillList = await AsyncStorage.getItem('pillList' + userEmail);
+                if (storedPillList !== null) {
+                    const parsedPillList = JSON.parse(storedPillList);
+                    setPillList(parsedPillList);
+                }
+                console.log('Pastillas cargadas:', pillList);
+
+            } catch (error) {
+                console.error('Error fetching pills:', error);
+            }
+        };
+
+        getEmail(); // Llama a getEmail aquí para obtener userEmail
+
+        registerForPushNotificationsAsync().then(token => setExpoPushToken(token));
+
+        fetchPillsAndTranslate();
+
+    }, [userEmail]);
+
+    useFocusEffect(() => {
+        fetchPills();
+    });
+
     return (
         <View style={styles.mainContainer}>
             <TopStroke />
@@ -204,7 +227,7 @@ export default function Home() {
                 <StatusBar style="inverted" />
                 {!hideDeleteAllPillsButton() && (
                     <View style={styles.button}>
-                        <Button title="Eliminar todas las pastillas" onPress={handleDeleteAllPills} color={"#C4CBD4"} />
+                        {/* <Button title="Eliminar todas las pastillas" onPress={handleDeleteAllPills} color={"#C4CBD4"} /> */}
                     </View>
                 )}
             </View>
